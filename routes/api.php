@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaskListController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,7 +26,6 @@ Route::prefix('auth')
             ->post('/sign-out', 'signOut');
     });
 
-
 Route::middleware('auth:sanctum')->group(function(){
     Route::prefix('profile')
         ->controller(ProfileController::class)
@@ -33,4 +33,12 @@ Route::middleware('auth:sanctum')->group(function(){
             Route::get('/', 'getProfile');
             Route::put('/', 'updateProfile');
         });
+
+    Route::get('/lists', [TaskListController::class, 'index']);
+    Route::post('/lists', [TaskListController::class, 'store']);
+    Route::get('/lists/{taskList}', [TaskListController::class, 'show']);
+    Route::put('/lists/{taskList}', [TaskListController::class, 'update']);
+    Route::delete('/lists/{taskList}', [TaskListController::class, 'destroy']);
+
+    Route::apiResource('task-lists', TaskListController::class);
 });
