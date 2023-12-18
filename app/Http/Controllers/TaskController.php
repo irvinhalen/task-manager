@@ -14,10 +14,38 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $request->validate([
+            'sort_by' => ['nullable', 'in:created_at,updated_at,title,details,status'],
+            'sort_dir' => ['nullable', 'in:asc,desc'],
+            'search' => ['nullable', 'string'],
+            'status' => ['nullable', 'string', new Enum(TaskStatus::class)]
+        ]);
+
+        $query = Task::where('user_id', Auth::id());
+
+        if($request->search ?? false){
+            $query->where(function ($q) use ($request){
+                $q->orWhere('title', 'LIKE', '%' . $request->search . '%');
+                $q->orWhere('details', 'LIKE', '%' . $request->search . '%');
+                $q->orWhere('status', 'LIKE', '%' . $request->search . '%');
+            });
+        }
+
+        if($request->status ?? false){
+            $query->where('status', $request->status);
+        }
+
+        $paginated = $query
+            ->orderBy($request->sort_by ?? $this->sort_by, $request->sort_dir ?? $this->sort_dir)
+            ->paginate($this->itemsPerPage);
+
         return $this->success([
-            'tasks' => TaskResource::collection(Task::where('user_id', Auth::id())->get())
+            'tasks' => TaskResource::collection($paginated),
+            'total' => $paginated->total(),
+            'page' => $paginated->currentPage(),
+            'lastPage' => $paginated->lastPage()
         ]);
     }
 

@@ -11,7 +11,13 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
-    public function success($params = [], $status = 200){
+    public int $itemsPerPage = 20;
+
+    public string $sort_by = 'updated_at';
+    public string $sort_dir = 'desc';
+
+    public function success($params = [], $status = 200)
+    {
         return Response::json(
             array_merge(
                 ['status' => 'success'],
